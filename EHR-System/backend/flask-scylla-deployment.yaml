@@ -1,0 +1,70 @@
+# https://stackoverflow.com/questions/51181638/run-flask-app-kubernetes
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-scylla
+  namespace: scylladb
+spec:
+  selector:
+    app: flask-scylla
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-scylla
+  namespace: scylladb
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flask-scylla
+  template:
+    metadata:
+      labels:
+        app: flask-scylla
+    spec:
+      containers:
+      - name: flask-scylla
+        image: flask-scylla:v8
+        imagePullPolicy: IfNotPresent # Always # Never
+        env:
+        - name: SCYLLA_URL
+          value: "scylladb.scylladb.svc.cluster.local"
+        - name: SCYLLA_PORT
+          value: "9042"
+        # How to get how many pods there are dynamically?
+        ports:
+        - containerPort: 5000
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+          limits:
+            cpu: "500m"
+            memory: "1Gi"
+---
+# https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/ copy paste just to get the feel of it
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: flask-scylla-auto-scaler
+  namespace: scylladb
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: flask-scylla
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50

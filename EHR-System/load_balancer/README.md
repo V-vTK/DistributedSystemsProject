@@ -1,0 +1,1 @@
+Here we need maybe NGINX to forward trafic to backend containers. Backend and kuberenetes already handle scyllaDB load balancing.

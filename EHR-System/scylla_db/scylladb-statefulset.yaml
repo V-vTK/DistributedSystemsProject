@@ -1,0 +1,57 @@
+# https://medium.com/@sjksingh/deploy-a-persistent-scylladb-cluster-on-minikube-11495c1f5582
+# https://docs.scylladb.com/manual/stable/reference/configuration-parameters.html
+apiVersion: v1
+kind: Service
+metadata:
+  name: scylladb
+  namespace: scylladb
+spec:
+  clusterIP: None
+  selector:
+    app: scylladb
+  ports:
+    - name: cql
+      protocol: TCP
+      port: 9042
+      targetPort: 9042
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: scylladb
+  namespace: scylladb
+spec:
+  serviceName: scylladb
+  replicas: 3
+  selector:
+    matchLabels:
+      app: scylladb
+  template:
+    metadata:
+      labels:
+        app: scylladb
+    spec:
+      containers:
+        - name: scylladb
+          image: scylladb/scylla:5.1 # Had problems with latest, they removed manual cqlsh
+          ports:
+            - containerPort: 9042
+              name: cql
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1"
+            limits:
+              memory: "4Gi"
+              cpu: "2"
+          volumeMounts:
+            - name: scylla-data
+              mountPath: /var/lib/scylla
+  volumeClaimTemplates:
+    - metadata:
+        name: scylla-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 5Gi
