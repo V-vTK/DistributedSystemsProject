@@ -1,0 +1,81 @@
+version: "3"
+# https://github.com/scylladb/scylla-code-samples/blob/master/mms/docker-compose.yml
+# https://university.scylladb.com/setup-a-scylla-cluster/
+services:
+
+  backend:
+    container_name: backend
+    build:
+      context: ./backend
+    environment:
+      - docker_deployment=true
+    ports:
+      - "8000:5000"
+    depends_on:
+      - scylla-node1
+      - scylla-node2
+      - scylla-node3
+    networks:
+      web:
+    
+  risk-detection:
+    container_name: risk-detection
+    build:
+      context: ./risk_detection
+    ports:
+      - "8888:5000"
+    environment:
+      - docker_deployment=true
+    depends_on:
+      - scylla-node1
+      - scylla-node2
+      - scylla-node3
+      - backend
+    networks:
+      web:
+
+  scylla-node1:
+    container_name: scylla-node1
+    image: scylladb/scylla:5.2.0
+    restart: always
+    command: --seeds=scylla-node1,scylla-node2 --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0
+    ports:
+      - "9042:9042"
+    volumes:
+      - "./scylla/scylla.yaml:/etc/scylla/scylla.yaml"
+      - "./scylla/cassandra-rackdc.properties.dc1:/etc/scylla/cassandra-rackdc.properties"
+      - "./scylla/mutant-data.txt:/mutant-data.txt"
+    networks:
+      web:
+
+  scylla-node2:
+    container_name: scylla-node2
+    image: scylladb/scylla:5.2.0
+    restart: always
+    command: --seeds=scylla-node1,scylla-node2 --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0
+    volumes:
+      - "./scylla/scylla.yaml:/etc/scylla/scylla.yaml"
+      - "./scylla/cassandra-rackdc.properties.dc1:/etc/scylla/cassandra-rackdc.properties"
+    networks:
+      web:
+
+  scylla-node3:
+    container_name: scylla-node3
+    image: scylladb/scylla:5.2.0
+    restart: always
+    command: --seeds=scylla-node1,scylla-node2 --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0
+    volumes:
+      - "./scylla/scylla.yaml:/etc/scylla/scylla.yaml"
+      - "./scylla/cassandra-rackdc.properties.dc1:/etc/scylla/cassandra-rackdc.properties"
+    networks:
+      web:
+
+networks:
+  web:
+    driver: bridge
+
+# # cqlsh
+# Connected to  at 172.23.0.2:9042.
+# [cqlsh 5.0.1 | Cassandra 3.0.8 | CQL spec 3.3.1 | Native protocol v4]
+# Use HELP for help.
+# cqlsh>

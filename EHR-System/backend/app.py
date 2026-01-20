@@ -25,14 +25,6 @@ session.set_keyspace("ehr_keyspace")
 def main_page():
     return "EHR System is running!!"
 
-# TODO not secure, just for testing!
-@app.route("/get/<table_name>", methods=["GET"])
-def get_rows(table_name):
-    cql = f"SELECT * FROM {table_name}"
-    rows = session.execute(cql)
-    result = [dict(row._asdict()) for row in rows]
-    return jsonify(result), 200
-
 # TODO add HTTPS and basic auth
 
 if __name__ == "__main__":
