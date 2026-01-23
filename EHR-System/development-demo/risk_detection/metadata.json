@@ -1,0 +1,34 @@
+{
+  "METADATA_SPEC_VERSION": "V1",
+  "tables": {
+    "health_data": {
+      "columns": {
+        "Respiratory_Rate": {
+          "sdtype": "numerical"
+        },
+        "Oxygen_Saturation": {
+          "sdtype": "numerical"
+        },
+        "O2_Scale": {
+          "sdtype": "numerical"
+        },
+        "Systolic_BP": {
+          "sdtype": "numerical"
+        },
+        "Heart_Rate": {
+          "sdtype": "numerical"
+        },
+        "Temperature": {
+          "sdtype": "numerical"
+        },
+        "Consciousness": {
+          "sdtype": "categorical"
+        },
+        "On_Oxygen": {
+          "sdtype": "categorical"
+        }
+      }
+    }
+  },
+  "relationships": []
+}
